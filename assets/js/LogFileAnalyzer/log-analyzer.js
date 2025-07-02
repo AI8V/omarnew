@@ -1,4 +1,4 @@
-// assets/js/log-analyzer.js - THE FINAL, PROFESSIONAL & COMPREHENSIVE EXPORT
+// assets/js/log-analyzer.js - THE FINAL & PERFECTED EXPORT STRUCTURE
 
 (function() {
     'use strict';
@@ -229,14 +229,15 @@
     }
     
     // ===================================================================
-    // FINALIZED INTELLIGENCE EXPORT FUNCTIONS
+    // ✅ FINAL, CORRECTED INTELLIGENCE EXPORT FUNCTIONS
     // ===================================================================
     function getFullAnalysisData() {
         if (!analysisResultData || !analysisResultData.filteredData) return null;
+        
         const { allParsedLines, filteredData, totalHits } = analysisResultData;
         const selectedOptionText = botFilterSelect.options[botFilterSelect.selectedIndex].textContent;
 
-        // 1. Bot Analysis (on the whole file)
+        // --- Data about the ENTIRE file ---
         const botTraffic = {};
         allParsedLines.forEach(line => {
             const botKey = line.botType === 'Other' ? 'Other/Unknown' : line.botType;
@@ -245,16 +246,14 @@
         const botAnalysis_InFile = Object.entries(botTraffic)
             .sort(([, a], [, b]) => b - a)
             .map(([bot, count]) => ({ bot, count, percentage: ((count / totalHits) * 100).toFixed(2) + '%' }));
-
-        // 2. Data based on the current filter
+        
+        // --- Data for the CURRENT filter ---
         const topCrawledPages_ForFilter = Object.entries(filteredData.pageCounts).sort(([,a],[,b]) => b.count-a.count).map(([url, data]) => ({ url, hits: data.count, topIps: Object.keys(data.ips) }));
         const top404Errors_ForFilter = Object.entries(filteredData.notFoundCounts).sort(([,a],[,b]) => b.count-a.count).map(([url, data]) => ({ url, hits: data.count, topIps: Object.keys(data.ips) }));
         const dailyActivity_ForFilter = Object.entries(filteredData.dailyCounts).sort(([a], [b]) => new Date(a.replace(/\//g, ' ')) - new Date(b.replace(/\//g, ' '))).map(([date, hits]) => ({ date, hits }));
-        
-        // 3. Data for integration (simple URL/count for the current filter)
         const crawlData_ForIntegration = topCrawledPages_ForFilter.map(({ url, hits }) => ({ url, count: hits }));
 
-        // 4. Metadata
+        // --- Metadata ---
         const dates = allParsedLines.map(l => l.date).filter(Boolean);
         const startDate = dates.length > 0 ? dates[0] : 'N/A';
         const endDate = dates.length > 0 ? dates[dates.length - 1] : 'N/A';
@@ -306,13 +305,13 @@
         
         zip.file("03_top_pages_(filtered).csv", "\uFEFF" + [
             `URL,Hits`,
-            ...data.topCrawledPages_ForFilter.map(row => `"${row.url}",${row.hits}`)
+            ...data.topCrawledPages_ForFilter.map(row => `"${row.url.replace(/"/g, '""')}",${row.hits}`)
         ].join('\n'));
         
         if (data.top404Errors_ForFilter.length > 0) {
             zip.file("04_404_errors_(filtered).csv", "\uFEFF" + [
                 `URL,404_Hits`,
-                ...data.top404Errors_ForFilter.map(row => `"${row.url}",${row.hits}`)
+                ...data.top404Errors_ForFilter.map(row => `"${row.url.replace(/"/g, '""')}",${row.hits}`)
             ].join('\n'));
         }
 
