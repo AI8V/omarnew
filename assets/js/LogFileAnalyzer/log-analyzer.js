@@ -1,4 +1,4 @@
-// assets/js/log-analyzer.js - THE FINAL, PROFESSIONAL EXPORT UPDATE
+// assets/js/log-analyzer.js - THE FINAL, PROFESSIONAL EXPORT UPDATE (PHASE II: INTELLIGENCE UPGRADE)
 
 (function() {
     'use strict';
@@ -128,7 +128,8 @@
         const filterValue = botFilterSelect.value;
         const data = {
             filteredHits: 0, errorHits: 0, successHits: 0,
-            pageCounts: {}, dailyCounts: {}, statusCounts: {}, notFoundCounts: {}
+            pageCounts: {}, dailyCounts: {}, statusCounts: {}, notFoundCounts: {},
+            statusCodeBreakdown: {} // ✅ UPGRADE: Add status code breakdown
         };
         analysisResultData.allParsedLines.forEach(line => {
             let filterMatch = false;
@@ -144,6 +145,10 @@
                 data.filteredHits++;
                 data.dailyCounts[line.date] = (data.dailyCounts[line.date] || 0) + 1;
                 const statusCode = line.statusCode;
+                
+                // ✅ UPGRADE: Populate status code breakdown
+                data.statusCodeBreakdown[statusCode] = (data.statusCodeBreakdown[statusCode] || 0) + 1;
+
                 if (statusCode >= 200 && statusCode < 300) data.successHits++;
                 if (statusCode >= 400) data.errorHits++;
                 const statusFamily = `${Math.floor(statusCode / 100)}xx`;
@@ -251,7 +256,7 @@
     }
     
     // ===================================================================
-    // UPGRADED INTELLIGENCE EXPORT FUNCTIONS (THE NEW CORE)
+    // UPGRADED INTELLIGENCE EXPORT FUNCTIONS (PHASE II)
     // ===================================================================
 
     function getFullAnalysisData() {
@@ -272,15 +277,22 @@
             logFileTimeRange: `${startDate} to ${endDate}`
         };
 
-        // --- Statistics for the current filter ---
+        // --- Statistics for the current filter (UPGRADED) ---
         const statistics_ForFilter = {
             totalHitsInFile: totalHits,
             filteredHits: filteredData.filteredHits,
             successHits: filteredData.successHits,
-            errorHits: filteredData.errorHits
+            errorHits: filteredData.errorHits,
+            // ✅ UPGRADE: Calculate crawl budget waste
+            crawlWastePercentage: filteredData.filteredHits > 0 ? 
+                ((filteredData.errorHits / filteredData.filteredHits) * 100).toFixed(2) + '%' 
+                : '0.00%'
         };
         
-        // --- Bot Analysis for the ENTIRE file ---
+        // --- ✅ UPGRADE: Granular status code breakdown for the filter ---
+        const statusCodeBreakdown_ForFilter = filteredData.statusCodeBreakdown || {};
+        
+        // --- Bot Analysis for the ENTIRE file (No Change) ---
         const botTraffic = {};
         allParsedLines.forEach(line => {
             const botKey = line.isVerified ? line.botType : `Unverified-${line.botType}`;
@@ -290,12 +302,12 @@
             .sort(([, a], [, b]) => b - a)
             .map(([bot, count]) => ({ bot, count, percentage: ((count / totalHits) * 100).toFixed(2) + '%' }));
 
-        // --- Daily Activity for the current filter ---
+        // --- Daily Activity for the current filter (No Change) ---
         const dailyActivity_ForFilter = Object.entries(filteredData.dailyCounts)
             .sort(([a], [b]) => new Date(a.replace(/\//g, ' ')) - new Date(b.replace(/\//g, ' ')))
             .map(([date, hits]) => ({ date, hits }));
 
-        // --- Helper to process page data with IPs ---
+        // --- Helper to process page data with IPs (No Change) ---
         const processPageData = (pageDataObject) => {
             return Object.entries(pageDataObject)
                 .sort(([, a], [, b]) => b.count - a.count)
@@ -304,22 +316,61 @@
                     hits: data.count,
                     topIps: Object.entries(data.ips)
                                  .sort(([, a], [, b]) => b - a)
-                                 .slice(0, 5) // Get top 5 IPs
+                                 .slice(0, 5)
                                  .map(([ip, count]) => `${ip} (${count})`)
                 }));
         };
 
-        // --- Top Pages & 404s for the current filter (with IPs) ---
         const topCrawledPages_ForFilter = processPageData(filteredData.pageCounts);
         const top404Errors_ForFilter = processPageData(filteredData.notFoundCounts);
         
-        // --- Data for Integration ---
         const crawlData_ForIntegration = topCrawledPages_ForFilter.map(({ url, hits }) => ({ url, count: hits }));
+
+        // --- ✅ UPGRADE: IP-Centric Analysis for the ENTIRE file ---
+        const ipAnalysis = {};
+        allParsedLines.forEach(line => {
+            if (!line.ip) return;
+            if (!ipAnalysis[line.ip]) {
+                ipAnalysis[line.ip] = {
+                    ip: line.ip,
+                    totalHits: 0,
+                    associatedBots: new Set(),
+                    requests: []
+                };
+            }
+            ipAnalysis[line.ip].totalHits++;
+            const botKey = line.isVerified ? line.botType : `Unverified-${line.botType}`;
+            ipAnalysis[line.ip].associatedBots.add(botKey);
+            ipAnalysis[line.ip].requests.push(line.request.split('?')[0]);
+        });
+
+        const ipAnalysis_InFile = Object.values(ipAnalysis)
+            .sort((a, b) => b.totalHits - a.totalHits)
+            .slice(0, 25) // Limit to top 25 IPs for performance
+            .map(ipData => {
+                const requestCounts = ipData.requests.reduce((acc, req) => {
+                    acc[req] = (acc[req] || 0) + 1;
+                    return acc;
+                }, {});
+                const topRequests = Object.entries(requestCounts)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 5)
+                    .map(([req]) => req);
+
+                return {
+                    ip: ipData.ip,
+                    totalHits: ipData.totalHits,
+                    associatedBots: [...ipData.associatedBots],
+                    topRequests: topRequests
+                };
+            });
 
         return {
             metadata,
             statistics_ForFilter,
             botAnalysis_InFile,
+            ipAnalysis_InFile, // New Section
+            statusCodeBreakdown_ForFilter, // New Section
             dailyActivity_ForFilter,
             topCrawledPages_ForFilter,
             top404Errors_ForFilter,
@@ -338,7 +389,7 @@
         downloadFile(blob, `full_log_analysis_report_${filterName}_${Date.now()}.json`);
     }
     
-    async function exportToCsv() { // ZIP of CSVs Export
+    async function exportToCsv() { // ZIP of CSVs Export (UPGRADED)
         const data = getFullAnalysisData();
         if (!data) {
             alert('لا توجد بيانات للتحليل والتصدير.');
@@ -346,9 +397,9 @@
         }
         
         const zip = new JSZip();
-        const BOM = "\uFEFF"; // Byte Order Mark for Excel
+        const BOM = "\uFEFF";
 
-        // Sheet 1: Summary
+        // Sheet 1: Summary (Upgraded)
         let summaryCsv = `Metric,Value\n`;
         summaryCsv += `Report Title,"${data.metadata.reportTitle}"\n`;
         summaryCsv += `Analysis Date,"${data.metadata.analysisDate}"\n`;
@@ -357,6 +408,7 @@
         summaryCsv += `Filtered Hits,"${data.statistics_ForFilter.filteredHits}"\n`;
         summaryCsv += `Success Hits (Filtered),"${data.statistics_ForFilter.successHits}"\n`;
         summaryCsv += `Error Hits (Filtered),"${data.statistics_ForFilter.errorHits}"\n`;
+        summaryCsv += `Crawl Waste Percentage (Filtered),"${data.statistics_ForFilter.crawlWastePercentage}"\n`;
         zip.file("01_summary.csv", BOM + summaryCsv);
 
         // Sheet 2: Bot Traffic (Entire File)
@@ -366,42 +418,51 @@
         });
         zip.file("02_bot_analysis_infile.csv", BOM + botCsv);
         
-        // Sheet 3: Daily Activity (Filtered)
+        // Sheet 3: IP Centric Analysis (New)
+        if(data.ipAnalysis_InFile.length > 0) {
+            let ipCsv = `IP,Total Hits,Associated Bots,Top Requests\n`;
+            data.ipAnalysis_InFile.forEach(row => {
+                ipCsv += `"${row.ip}",${row.totalHits},"${row.associatedBots.join(', ')}","${row.topRequests.join(', ')}"\n`;
+            });
+            zip.file("03_ip_centric_analysis.csv", BOM + ipCsv);
+        }
+
+        // Sheet 4: Status Code Breakdown (New)
+        if(Object.keys(data.statusCodeBreakdown_ForFilter).length > 0){
+            let statusCsv = `Status Code,Count\n`;
+            Object.entries(data.statusCodeBreakdown_ForFilter).forEach(([code, count]) => {
+                statusCsv += `${code},${count}\n`;
+            });
+            zip.file("04_status_code_breakdown.csv", BOM + statusCsv);
+        }
+        
+        // Sheet 5: Daily Activity (Filtered)
         if (data.dailyActivity_ForFilter.length > 0) {
             let dailyCsv = `Date,Hits\n`;
             data.dailyActivity_ForFilter.forEach(row => {
                 dailyCsv += `${row.date},${row.hits}\n`;
             });
-            zip.file("03_daily_activity_filtered.csv", BOM + dailyCsv);
+            zip.file("05_daily_activity_filtered.csv", BOM + dailyCsv);
         }
         
-        // Sheet 4: Top Crawled Pages (Filtered)
+        // Sheet 6: Top Crawled Pages (Filtered)
         if (data.topCrawledPages_ForFilter.length > 0) {
-            let pagesCsv = `URL,Hits,Top_IPs\n`;
+            let pagesCsv = `URL,Hits,Top IPs\n`;
             data.topCrawledPages_ForFilter.forEach(row => {
                 pagesCsv += `"${row.url}",${row.hits},"${row.topIps.join(', ')}"\n`;
             });
-            zip.file("04_top_pages_filtered.csv", BOM + pagesCsv);
+            zip.file("06_top_pages_filtered.csv", BOM + pagesCsv);
         }
 
-        // Sheet 5: 404 Errors (Filtered)
+        // Sheet 7: 404 Errors (Filtered)
         if (data.top404Errors_ForFilter.length > 0) {
-            let errorsCsv = `URL,Hits,Top_IPs\n`;
+            let errorsCsv = `URL,Hits,Top IPs\n`;
             data.top404Errors_ForFilter.forEach(row => {
                 errorsCsv += `"${row.url}",${row.hits},"${row.topIps.join(', ')}"\n`;
             });
-            zip.file("05_404_errors_filtered.csv", BOM + errorsCsv);
+            zip.file("07_404_errors_filtered.csv", BOM + errorsCsv);
         }
         
-        // Sheet 6: Integration Data (Filtered)
-        if (data.crawlData_ForIntegration.length > 0) {
-            let integrationCsv = `URL,Count\n`;
-            data.crawlData_ForIntegration.forEach(row => {
-                integrationCsv += `"${row.url}",${row.count}\n`;
-            });
-            zip.file("06_integration_data.csv", BOM + integrationCsv);
-        }
-
         const filterName = botFilterSelect.value.replace(/[^a-z0-9]/gi, '_');
         const content = await zip.generateAsync({ type: "blob" });
         downloadFile(content, `log_analysis_report_${filterName}_${Date.now()}.zip`);
