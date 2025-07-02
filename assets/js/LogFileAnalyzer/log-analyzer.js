@@ -1,4 +1,4 @@
-// assets/js/log-analyzer.js - THE FINAL & PERFECTED EXPORT STRUCTURE
+// assets/js/log-analyzer.js - THE FINAL, PROFESSIONAL & COMPREHENSIVE EXPORT V2.0
 
 (function() {
     'use strict';
@@ -120,7 +120,6 @@
 
     function filterAndDisplay() {
         if (!analysisResultData) return;
-        
         const filterValue = botFilterSelect.value;
         const data = {
             filteredHits: 0, errorHits: 0, successHits: 0,
@@ -229,7 +228,7 @@
     }
     
     // ===================================================================
-    // ✅ FINAL, CORRECTED INTELLIGENCE EXPORT FUNCTIONS
+    // FINALIZED INTELLIGENCE EXPORT FUNCTIONS V2.0
     // ===================================================================
     function getFullAnalysisData() {
         if (!analysisResultData || !analysisResultData.filteredData) return null;
@@ -237,7 +236,7 @@
         const { allParsedLines, filteredData, totalHits } = analysisResultData;
         const selectedOptionText = botFilterSelect.options[botFilterSelect.selectedIndex].textContent;
 
-        // --- Data about the ENTIRE file ---
+        // Bot Analysis (on the whole file)
         const botTraffic = {};
         allParsedLines.forEach(line => {
             const botKey = line.botType === 'Other' ? 'Other/Unknown' : line.botType;
@@ -246,14 +245,16 @@
         const botAnalysis_InFile = Object.entries(botTraffic)
             .sort(([, a], [, b]) => b - a)
             .map(([bot, count]) => ({ bot, count, percentage: ((count / totalHits) * 100).toFixed(2) + '%' }));
-        
-        // --- Data for the CURRENT filter ---
+
+        // Data based on the current filter
         const topCrawledPages_ForFilter = Object.entries(filteredData.pageCounts).sort(([,a],[,b]) => b.count-a.count).map(([url, data]) => ({ url, hits: data.count, topIps: Object.keys(data.ips) }));
         const top404Errors_ForFilter = Object.entries(filteredData.notFoundCounts).sort(([,a],[,b]) => b.count-a.count).map(([url, data]) => ({ url, hits: data.count, topIps: Object.keys(data.ips) }));
         const dailyActivity_ForFilter = Object.entries(filteredData.dailyCounts).sort(([a], [b]) => new Date(a.replace(/\//g, ' ')) - new Date(b.replace(/\//g, ' '))).map(([date, hits]) => ({ date, hits }));
+        
+        // Data for integration
         const crawlData_ForIntegration = topCrawledPages_ForFilter.map(({ url, hits }) => ({ url, count: hits }));
 
-        // --- Metadata ---
+        // Metadata
         const dates = allParsedLines.map(l => l.date).filter(Boolean);
         const startDate = dates.length > 0 ? dates[0] : 'N/A';
         const endDate = dates.length > 0 ? dates[dates.length - 1] : 'N/A';
@@ -290,6 +291,7 @@
         if (!data) return alert('لا توجد بيانات للتحليل والتصدير.');
         const zip = new JSZip();
 
+        // Sheet 1: Summary
         zip.file("01_summary.csv", "\uFEFF" + [
             `Metric,Value`,
             `Report For,"${data.metadata.reportTitle}"`,
@@ -298,16 +300,19 @@
             `Analysis Period,"${data.metadata.logFileTimeRange}"`,
         ].join('\n'));
 
+        // Sheet 2: Bot Traffic Overview (from whole file)
         zip.file("02_bot_traffic_overview.csv", "\uFEFF" + [
             `Bot,Total_Hits,Percentage_Of_Total`,
             ...data.botAnalysis_InFile.map(row => `${row.bot},${row.count},${row.percentage}`)
         ].join('\n'));
         
+        // Sheet 3: Top Pages (for the current filter)
         zip.file("03_top_pages_(filtered).csv", "\uFEFF" + [
             `URL,Hits`,
             ...data.topCrawledPages_ForFilter.map(row => `"${row.url.replace(/"/g, '""')}",${row.hits}`)
         ].join('\n'));
         
+        // Sheet 4: 404 Errors (for the current filter)
         if (data.top404Errors_ForFilter.length > 0) {
             zip.file("04_404_errors_(filtered).csv", "\uFEFF" + [
                 `URL,404_Hits`,
@@ -315,6 +320,7 @@
             ].join('\n'));
         }
 
+        // Sheet 5: Daily Activity (for the current filter)
         zip.file("05_daily_activity_(filtered).csv", "\uFEFF" + [
             `Date,Hits`,
             ...data.dailyActivity_ForFilter.map(row => `${row.date},${row.hits}`)
