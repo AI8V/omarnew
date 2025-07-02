@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html data-bs-theme="auto" lang="ar" dir="rtl">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>new</title>
+    <script>
+        (function() {
+
+            // JavaScript snippet handling Dark/Light mode switching
+
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const setStoredTheme = theme => localStorage.setItem('theme', theme);
+            const forcedTheme = document.documentElement.getAttribute('data-bss-forced-theme');
+
+            const getPreferredTheme = () => {
+
+                if (forcedTheme) return forcedTheme;
+
+                const storedTheme = getStoredTheme();
+                if (storedTheme) {
+                    return storedTheme;
+                }
+
+                const pageTheme = document.documentElement.getAttribute('data-bs-theme');
+
+                if (pageTheme) {
+                    return pageTheme;
+                }
+
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            const setTheme = theme => {
+                if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                }
+            }
+
+            setTheme(getPreferredTheme());
+
+            const showActiveTheme = (theme, focus = false) => {
+                const themeSwitchers = [].slice.call(document.querySelectorAll('.theme-switcher'));
+
+                if (!themeSwitchers.length) return;
+
+                document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
+                    element.classList.remove('active');
+                    element.setAttribute('aria-pressed', 'false');
+                });
+
+                for (const themeSwitcher of themeSwitchers) {
+
+                    const btnToActivate = themeSwitcher.querySelector('[data-bs-theme-value="' + theme + '"]');
+
+                    if (btnToActivate) {
+                        btnToActivate.classList.add('active');
+                        btnToActivate.setAttribute('aria-pressed', 'true');
+                    }
+                }
+            }
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme !== 'light' && storedTheme !== 'dark') {
+                    setTheme(getPreferredTheme());
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                showActiveTheme(getPreferredTheme());
+
+                document.querySelectorAll('[data-bs-theme-value]')
+                    .forEach(toggle => {
+                        toggle.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const theme = toggle.getAttribute('data-bs-theme-value');
+                            setStoredTheme(theme);
+                            setTheme(theme);
+                            showActiveTheme(theme);
+                        })
+                    })
+            });
+        })();
+    </script>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top bg-body-tertiary shadow-sm">
+        <div class="container"><a class="navbar-brand fw-bold" href="/"><i class="bi bi-gem ms-2"></i>Ai8V | Mind &amp; Machine</a><span class="d-none d-sm-block navbar-text">The Intelligent SEO Ecosystem</span></div>
+    </nav>
+    <main class="container my-5">
+        <div class="text-center py-5">
+            <h1 class="display-4 fw-bolder">النظام البيئي الكامل لتحسين محركات البحث</h1>
+            <p class="lead text-muted mx-auto mt-3 mb-4" style="max-width:700px;"> منصة متكاملة من الأدوات الدقيقة المصممة لتمنحك فهمًا لا مثيل له لموقعك، وسلطة مطلقة على ترتيبك في البحث. </p>
+        </div>
+        <div class="row justify-content-center g-4">
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm tool-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-primary bg-primary-subtle tool-icon me-3"><i class="bi bi-server"></i></div>
+                            <h2 class="h4 card-title mb-0">محلل ملفات السجلات</h2>
+                        </div>
+                        <p class="text-muted card-text">اكتشف الحقيقة المطلقة. حلل سلوك Googlebot، واكشف عن إهدار ميزانية الزحف، وحدد أولويات Google الحقيقية لموقعك.</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-4 pt-0"><a class="btn btn-primary w-100" role="button" href="LogFileAnalyzer/">شغّل المحلل</a></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm tool-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-info bg-info-subtle tool-icon me-3"><i class="bi bi-ghost"></i></div>
+                            <h2 class="h4 card-title mb-0">مدقق الصحة التقنية</h2>
+                        </div>
+                        <p class="text-muted card-text">لا تملك ملف سجل؟ لا مشكلة. ابدأ فحصًا سريعًا وشاملاً لموقعك لاكتشاف الروابط المعطلة ومشاكل SEO الفنية الأساسية.</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-4 pt-0"><a class="btn btn-outline-primary w-100" role="button" href="LogFileAnalyzer/ghost.html">ابدأ الفحص السريع</a></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm tool-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-success bg-success-subtle tool-icon me-3"><i class="bi bi-diagram-3-fill"></i></div>
+                            <h2 class="h4 card-title mb-0">المختبر البصري للبنية</h2>
+                        </div>
+                        <p class="text-muted card-text">حوّل بيانات موقعك إلى خريطة تفاعلية. اكشف الصفحات اليتيمة، وتتبع تدفق القوة، واكتشف فرص الربط الداخلي بنظرة واحدة.</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-4 pt-0"><a class="btn btn-primary w-100" role="button" href="SiteVisualizerLab/">افتح المختبر</a></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm tool-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-warning bg-warning-subtle tool-icon me-3"><i class="bi bi-bounding-box-circles"></i></div>
+                            <h2 class="h4 card-title mb-0">مهندس السكيما الذكي</h2>
+                        </div>
+                        <p class="text-muted card-text">تحدث بلغة محركات البحث. أنشئ بيانات منظمة (JSON-LD) متقدمة ومتداخلة بذكاء بناءً على تحليل حقيقي لمحتواك.</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 p-4 pt-0"><a class="btn btn-primary w-100" role="button" href="SchemaArchitect/">ابنِ السكيما الآن</a></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="text-center text-lg-start bg-body mt-auto border-top pt-5">
+        <h2 class="visually-hidden">تذييل الموقع ومعلومات إضافية</h2>
+        <div class="container p-4">
+            <div class="row">
+                <div class="col-md-12 col-lg-4 text-end mb-4 mb-md-0">
+                    <h3 class="text-uppercase mb-3 h5"> ادعم المشروع</h3>
+                    <p class="text-muted small" style="line-height:1.8;"> تم بناء هذه الأدوات لتكون متاحة للجميع. أنا أؤمن بمشاركة المعرفة. إذا كنت بحاجة إلى مساعدة متخصصة لموقعك أو لديك استفسار يتطلب خبرة، يمكنك حجز استشارة مدفوعة. </p><a class="btn btn-success mt-2" role="button" id="whatsappBtn" href="https://wa.me/201556450850?text=مرحبًا،%20أرغب%20في%20حجز%20استشارة%20مدفوعة%20بخصوص%20تحسين%20محركات%20البحث%20بعد%20اطلاعي%20على%20أدوات%20Ai8V." target="_blank"><i class="bi bi-whatsapp ms-2" aria-hidden="true"></i> اطلب استشارة مدفوعة <span class="visually-hidden">(يفتح في نافذة جديدة)</span></a>
+                </div>
+                <div class="col-md-6 col-lg-2 text-end mb-4 mb-md-0">
+                    <h3 class="text-uppercase text-center mb-3 h5">مجموعة الأدوات</h3>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a class="text-decoration-none text-body-secondary" href="LogFileAnalyzer/"><i class="bi bi-server ms-2" aria-hidden="true"></i>محلل السجلات</a></li>
+                        <li class="mb-2"><a class="text-decoration-none text-body-secondary" href="SiteVisualizerLab/"><i class="bi bi-diagram-3 ms-2" aria-hidden="true"></i>المحلل البصري</a></li>
+                        <li class="mb-2"><a class="text-decoration-none text-body-secondary" href="SchemaArchitect/"><i class="bi bi-bounding-box-circles ms-2" aria-hidden="true"></i>مهندس السكيما</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-6 col-lg-3 text-end mb-4 mb-md-0">
+                    <h3 class="text-uppercase text-center d-flex justify-content-center mb-3 h5">مقالات ومصادر</h3>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><a class="text-decoration-none text-body-secondary" href="/blog/what-is-crawl-budget"><i class="bi bi-book-half ms-2" aria-hidden="true"></i>شرح ميزانية الزحف</a></li>
+                        <li class="mb-2"><a class="text-decoration-none text-body-secondary" href="/blog/technical-seo-guide"><i class="bi bi-book-half ms-2" aria-hidden="true"></i>دليل الـ SEO التقني</a></li>
+                        <li class="mb-2"><a class="text-decoration-none text-body-secondary" href="/blog/schema-for-beginners"><i class="bi bi-book-half ms-2" aria-hidden="true"></i>فهم البيانات المنظمة</a></li>
+                        <li class="d-flex mb-2 mt-2 me-4"><a class="fw-bold text-decoration-none text-body-secondary" href="/blog">كل المقالات...</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-12 col-lg-3 text-end text-lg-end mb-4 mb-md-0">
+                    <h3 class="text-uppercase text-center mb-3 h5">بُني بواسطة [عمرو عبدالسلام]</h3>
+                    <p class="text-muted small me-2"> خبير في تحسين محركات البحث وتطوير الأدوات التي تساعد الآخرين على النجاح. </p>
+                    <div class="d-flex justify-content-center gap-3 mt-3 ms-4"><a class="fs-4 text-body-secondary" href="https://x.com/AmrAbssalam" target="_blank" aria-label="تابعني على تويتر / X (يفتح في نافذة جديدة)"><i class="bi bi-twitter-x" aria-hidden="true"></i></a><a class="fs-4 text-body-secondary" href="https://www.linkedin.com/in/amrabdelsalam87/" target="_blank" aria-label="تواصل معي على لينكد إن (يفتح في نافذة جديدة)"><i class="bi bi-linkedin" aria-hidden="true"></i></a><a class="fs-4 text-body-secondary" href="https://github.com/AI8V" target="_blank" aria-label="اطلع على مشاريعي على جيت هاب (يفتح في نافذة جديدة)"><i class="bi bi-github" aria-hidden="true"></i></a><a class="fs-4 text-body-secondary" href="https://www.youtube.com/@4DigitalMarketer" target="_blank" aria-label="شاهد قناتي على يوتيوب (يفتح في نافذة جديدة)"><i class="bi bi-youtube" aria-hidden="true"></i></a></div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center p-3" style="background-color:rgba(0, 0, 0, 0.05);"><span> © </span><script>document.write(new Date().getFullYear())</script><span> الحقوق محفوظة: </span><a class="text-body-secondary" href="https://ai8v.com/">Ai8V | Mind &amp; Machine</a></div>
+    </footer>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/bs-init.js"></script>
+</body>
+
+</html>

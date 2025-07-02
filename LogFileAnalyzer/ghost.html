@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html data-bs-theme="auto" lang="ar" dir="rtl">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>new</title>
+    <script>
+        (function() {
+
+            // JavaScript snippet handling Dark/Light mode switching
+
+            const getStoredTheme = () => localStorage.getItem('theme');
+            const setStoredTheme = theme => localStorage.setItem('theme', theme);
+            const forcedTheme = document.documentElement.getAttribute('data-bss-forced-theme');
+
+            const getPreferredTheme = () => {
+
+                if (forcedTheme) return forcedTheme;
+
+                const storedTheme = getStoredTheme();
+                if (storedTheme) {
+                    return storedTheme;
+                }
+
+                const pageTheme = document.documentElement.getAttribute('data-bs-theme');
+
+                if (pageTheme) {
+                    return pageTheme;
+                }
+
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+
+            const setTheme = theme => {
+                if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                }
+            }
+
+            setTheme(getPreferredTheme());
+
+            const showActiveTheme = (theme, focus = false) => {
+                const themeSwitchers = [].slice.call(document.querySelectorAll('.theme-switcher'));
+
+                if (!themeSwitchers.length) return;
+
+                document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
+                    element.classList.remove('active');
+                    element.setAttribute('aria-pressed', 'false');
+                });
+
+                for (const themeSwitcher of themeSwitchers) {
+
+                    const btnToActivate = themeSwitcher.querySelector('[data-bs-theme-value="' + theme + '"]');
+
+                    if (btnToActivate) {
+                        btnToActivate.classList.add('active');
+                        btnToActivate.setAttribute('aria-pressed', 'true');
+                    }
+                }
+            }
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                const storedTheme = getStoredTheme();
+                if (storedTheme !== 'light' && storedTheme !== 'dark') {
+                    setTheme(getPreferredTheme());
+                }
+            });
+
+            window.addEventListener('DOMContentLoaded', () => {
+                showActiveTheme(getPreferredTheme());
+
+                document.querySelectorAll('[data-bs-theme-value]')
+                    .forEach(toggle => {
+                        toggle.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const theme = toggle.getAttribute('data-bs-theme-value');
+                            setStoredTheme(theme);
+                            setTheme(theme);
+                            showActiveTheme(theme);
+                        })
+                    })
+            });
+        })();
+    </script>
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-dark shadow-sm navbar-dark">
+        <div class="container-fluid"><a class="navbar-brand fw-bold" href="/"><i class="bi bi-gem ms-2" aria-hidden="true"></i>Mind &amp; Machine</a><span class="navbar-text">Site Auditor &amp; Health Scanner</span></div>
+    </nav>
+    <div class="theme-switcher dropdown position-fixed top-0 start-0 m-3 mt-5 ps-0 pt-2 pb-0 mb-0" style="z-index:1031;"><button class="btn btn-link dropdown-toggle ps-0 pe-0 pb-0 pt-0" aria-expanded="false" data-bs-toggle="dropdown" style="color:var(--bs-body-color);" title="التبديل بين الوضع الفاتح و الغامق" type="button"><i aria-hidden="true" class="bi bi-sun-fill mb-1"></i></button>
+        <div class="dropdown-menu"><a class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" href="#"><i class="bi bi-sun-fill opacity-50 me-2"></i>Light</a><a class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" href="#"><i class="bi bi-moon-stars-fill opacity-50 me-2"></i>Dark</a><a class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" href="#"><i class="bi bi-circle-half opacity-50 me-2"></i>Auto</a></div>
+    </div>
+    <main class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4"><i class="text-primary bi bi-search" style="font-size:4rem;" aria-hidden="true"></i>
+                            <h1 class="fw-bold h2 mt-3">مدقق و كاشف المواقع</h1>
+                            <p class="lead text-muted">اكتشف المشاكل التقنية في موقعك قبل أن يكتشفها Google.</p>
+                        </div>
+                        <div class="input-group mb-3"><input class="form-control form-control-lg form-control form-control" type="url" dir="ltr" id="startUrl" placeholder="https://example.com" required=""><button class="btn btn-primary px-4" id="startCrawlBtn"><i class="bi bi-search ms-2" aria-hidden="true"></i>ابدأ الفحص</button></div>
+                        <div class="form-text"><span>أدخل رابط الصفحة الرئيسية لموقعك ( يجب أن يبدأ بـ&nbsp;</span><span dir="ltr">( https://&nbsp;</span></div>
+                        <div class="d-none mt-4" id="progress-section">
+                            <div class="d-flex justify-content-between"><span id="status-text">بدء عملية الزحف...</span><span id="crawl-counter">0/0</span></div>
+                            <div class="progress mt-2" style="height:10px;">
+                                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-none mt-5" id="results-section">
+            <h2 class="text-center mb-4 border-bottom pb-3">تقرير الصحة التقنية</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-body">
+                            <h5 class="text-muted card-title">درجة الصحة</h5>
+                            <p class="fw-bold text-primary display-4" id="health-score">100</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header fw-bold text-danger-emphasis bg-danger-subtle"><i class="bi bi-exclamation-octagon-fill ms-2" aria-hidden="true"></i><span>أخطاء حرجة</span></div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center"><span>روابط معطلة (404)</span><span class="badge rounded-pill bg-danger" id="broken-links-count">0</span></li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center"><span>أخطاء الخادم (5xx)</span><span class="badge rounded-pill bg-danger" id="server-errors-count">0</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="h5 mb-0">قائمة المشاكل المكتشفة</h3><button class="btn btn-success btn-sm d-none" id="exportVisualizerBtn"><i class="bi bi-diagram-3-fill ms-2" aria-hidden="true"></i>تصدير للمحلل البصري </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>المشكلة</th>
+                                    <th>الوصف</th>
+                                    <th>الرابط المصاب</th>
+                                </tr>
+                            </thead>
+                            <tbody id="issues-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div class="toast hide" role="alert" data-bs-animation="false" id="errorToast" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header"><i class="text-danger bi bi-exclamation-triangle-fill ms-2"></i><strong class="ms-auto me-2">خطأ في الإدخال</strong><button class="btn-close me-5 ps-0 ms-0" type="button" data-bs-dismiss="toast" aria-label="Close"></button></div>
+            <div class="toast-body" role="alert"><span id="toast-body-message"></span></div>
+        </div>
+    </div>
+    <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../assets/js/bs-init.js"></script>
+    <script src="../assets/js/LogFileAnalyzer/ghost-crawler.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,37 @@
+/* assets/css/log-analyzer/styles.css */
+
+.drop-zone {
+  background-color: var(--bs-tertiary-bg);
+  border-color: var(--bs-border-color-translucent);
+  transition: background-color 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.drop-zone.dragover {
+  background-color: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary);
+}
+
+/* assets/css/styles.css */
+
+/* ... (الكود الحالي) ... */
+
+.btn-danger-high-contrast {
+  --bs-btn-color: var(--bs-danger-text-emphasis);
+  --bs-btn-border-color: var(--bs-danger-border-subtle);
+  --bs-btn-hover-bg: var(--bs-danger);
+  --bs-btn-hover-border-color: var(--bs-danger);
+  --bs-btn-hover-color: var(--bs-white);
+  --bs-btn-active-bg: var(--bs-danger);
+  --bs-btn-active-border-color: var(--bs-danger);
+  --bs-btn-active-color: var(--bs-white);
+}
+
+[data-bs-theme="dark"] .text-muted, [data-bs-theme="dark"] .text-body-secondary {
+  color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] caption {
+  color: #adb5bd !important;
+}
+
