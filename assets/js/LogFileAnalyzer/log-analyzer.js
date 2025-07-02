@@ -1,4 +1,4 @@
-// assets/js/log-analyzer.js - THE FINAL, PROFESSIONAL & COMPREHENSIVE EXPORT V2.0
+// assets/js/log-analyzer.js - THE FINAL, PROFESSIONAL EXPORT UPDATE
 
 (function() {
     'use strict';
@@ -71,14 +71,14 @@
     }
 
     function resetUI(fullReset = false) {
-        if (fullReset) sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        if (fullReset) {
+            sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        }
         analysisResultData = null;
         resultsContainer.classList.add('d-none');
         clearBtn.classList.add('d-none');
         resultsPlaceholder.classList.remove('d-none');
-        document.getElementById('comparison-container')?.classList.add('d-none');
-        document.getElementById('insights-container')?.classList.add('d-none');
-        document.getElementById('comparison-drop-zone-container')?.classList.add('d-none');
+        
         totalHitsEl.textContent = '0';
         filteredHitsEl.textContent = '0';
         successHitsEl.textContent = '0';
@@ -86,8 +86,12 @@
         topPagesBody.innerHTML = '';
         notFoundPagesBody.innerHTML = '';
         if(show404ModalBtn) show404ModalBtn.classList.add('d-none');
+
         [exportJsonBtn, exportCsvBtn].forEach(btn => {
-            if(btn) { btn.disabled = true; btn.classList.add('disabled'); }
+            if(btn) {
+                btn.disabled = true;
+                btn.classList.add('disabled');
+            }
         });
         if (crawlTrendChart) { crawlTrendChart.destroy(); crawlTrendChart = null; }
         if (statusCodesChart) { statusCodesChart.destroy(); statusCodesChart = null; }
@@ -120,6 +124,7 @@
 
     function filterAndDisplay() {
         if (!analysisResultData) return;
+        
         const filterValue = botFilterSelect.value;
         const data = {
             filteredHits: 0, errorHits: 0, successHits: 0,
@@ -159,17 +164,26 @@
     
     function displayResults() {
         if (!analysisResultData || !analysisResultData.filteredData) return;
+
         const { filteredData, totalHits } = analysisResultData;
         const selectedOptionText = botFilterSelect.options[botFilterSelect.selectedIndex].textContent;
         const hasData = totalHits > 0;
         
         [exportJsonBtn, exportCsvBtn].forEach(btn => {
-            if(btn) { btn.disabled = !hasData; btn.classList.toggle('disabled', !hasData); }
+            if(btn) {
+                btn.disabled = !hasData;
+                btn.classList.toggle('disabled', !hasData);
+            }
         });
-        if(clearBtn) { clearBtn.disabled = !hasData; clearBtn.classList.toggle('d-none', !hasData); }
+        if(clearBtn) {
+            clearBtn.disabled = !hasData;
+            clearBtn.classList.toggle('d-none', !hasData);
+        }
+
         resultsPlaceholder.classList.toggle('d-none', hasData);
         resultsContainer.classList.toggle('d-none', !hasData);
-        if (!hasData) return; 
+        
+        if (!hasData) return;
 
         totalHitsEl.textContent = totalHits.toLocaleString();
         filteredHitsEl.textContent = filteredData.filteredHits.toLocaleString();
@@ -177,6 +191,7 @@
         successHitsEl.textContent = filteredData.successHits.toLocaleString();
         errorHitsEl.textContent = filteredData.errorHits.toLocaleString();
         topPagesTitle.textContent = `أهم الصفحات التي زارها ${selectedOptionText}`;
+        
         const sortedPages = Object.entries(filteredData.pageCounts).sort(([, a], [, b]) => b.count - a.count).slice(0, 25);
         topPagesBody.innerHTML = sortedPages.length > 0
             ? sortedPages.map(([page, pageData], index) => {
@@ -184,6 +199,7 @@
                 return `<tr><td>${index + 1}</td><td class="text-start" dir="ltr">${page}</td><td class="text-center">${pageData.count.toLocaleString()}</td><td class="text-center" dir="ltr">${topIps || ''}</td></tr>`;
             }).join('')
             : `<tr><td colspan="4" class="text-center text-muted">لم يتم العثور على زيارات مطابقة لهذا الفلتر.</td></tr>`;
+
         const sortedNotFound = Object.entries(filteredData.notFoundCounts).sort(([, a], [, b]) => b.count - a.count);
         if (show404ModalBtn) {
             const has404 = sortedNotFound.length > 0;
@@ -200,7 +216,11 @@
     
     function saveSession() {
         if (!analysisResultData) return;
-        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({ analysisResultData, filterValue: botFilterSelect.value }));
+        const session = {
+            analysisResultData: analysisResultData,
+            filterValue: botFilterSelect.value
+        };
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
     }
 
     function loadSession() {
@@ -211,10 +231,10 @@
                 analysisResultData = session.analysisResultData;
                 botFilterSelect.value = session.filterValue;
                 setLoadingState(false, 'تم استعادة الجلسة السابقة');
-                const analysisEvent = new CustomEvent('analysisComplete', { detail: analysisResultData });
-                document.dispatchEvent(analysisEvent);
                 filterAndDisplay();
-            } catch (e) { handleError("فشل تحميل الجلسة السابقة."); }
+            } catch (e) {
+                handleError("فشل تحميل الجلسة السابقة.");
+            }
         }
     }
 
@@ -224,129 +244,229 @@
         a.download = fileName;
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 100);
     }
     
     // ===================================================================
-    // FINALIZED INTELLIGENCE EXPORT FUNCTIONS V2.0
+    // UPGRADED INTELLIGENCE EXPORT FUNCTIONS
     // ===================================================================
-    function getFullAnalysisData() {
-        if (!analysisResultData || !analysisResultData.filteredData) return null;
-        
-        const { allParsedLines, filteredData, totalHits } = analysisResultData;
-        const selectedOptionText = botFilterSelect.options[botFilterSelect.selectedIndex].textContent;
 
-        // Bot Analysis (on the whole file)
+    function getFullAnalysisData() {
+        if (!analysisResultData) return null;
+
         const botTraffic = {};
-        allParsedLines.forEach(line => {
+        analysisResultData.allParsedLines.forEach(line => {
             const botKey = line.botType === 'Other' ? 'Other/Unknown' : line.botType;
             botTraffic[botKey] = (botTraffic[botKey] || 0) + 1;
         });
-        const botAnalysis_InFile = Object.entries(botTraffic)
+        const sortedBotTraffic = Object.entries(botTraffic)
             .sort(([, a], [, b]) => b - a)
-            .map(([bot, count]) => ({ bot, count, percentage: ((count / totalHits) * 100).toFixed(2) + '%' }));
+            .map(([bot, count]) => ({ bot, count, percentage: ((count / analysisResultData.totalHits) * 100).toFixed(2) + '%' }));
 
-        // Data based on the current filter
-        const topCrawledPages_ForFilter = Object.entries(filteredData.pageCounts).sort(([,a],[,b]) => b.count-a.count).map(([url, data]) => ({ url, hits: data.count, topIps: Object.keys(data.ips) }));
-        const top404Errors_ForFilter = Object.entries(filteredData.notFoundCounts).sort(([,a],[,b]) => b.count-a.count).map(([url, data]) => ({ url, hits: data.count, topIps: Object.keys(data.ips) }));
-        const dailyActivity_ForFilter = Object.entries(filteredData.dailyCounts).sort(([a], [b]) => new Date(a.replace(/\//g, ' ')) - new Date(b.replace(/\//g, ' '))).map(([date, hits]) => ({ date, hits }));
+        const pageTraffic = {};
+        const notFoundPages = {};
+        analysisResultData.allParsedLines.forEach(line => {
+            if (line.botType !== 'Other' && line.isVerified && line.request && !IGNORED_EXTENSIONS_REGEX.test(line.request)) {
+                const page = line.request.split('?')[0];
+                if(line.statusCode === 404) {
+                    notFoundPages[page] = (notFoundPages[page] || 0) + 1;
+                } else {
+                    pageTraffic[page] = (pageTraffic[page] || 0) + 1;
+                }
+            }
+        });
         
-        // Data for integration
-        const crawlData_ForIntegration = topCrawledPages_ForFilter.map(({ url, hits }) => ({ url, count: hits }));
+        // ✅ FIX: Convert array-of-arrays to array-of-objects
+        const sortedTopPages = Object.entries(pageTraffic).sort(([, a], [, b]) => b - a).slice(0, 100).map(([url, hits]) => ({ url, hits }));
+        const sorted404Pages = Object.entries(notFoundPages).sort(([, a], [, b]) => b - a).map(([url, hits]) => ({ url, hits }));
+        
+        const dailyActivity = {};
+         analysisResultData.allParsedLines.forEach(line => {
+            if (line.botType !== 'Other' && line.isVerified) {
+                 dailyActivity[line.date] = (dailyActivity[line.date] || 0) + 1;
+            }
+        });
+        
+        // ✅ FIX: Convert array-of-arrays to array-of-objects
+        const sortedDailyActivity = Object.entries(dailyActivity).sort(([a], [b]) => new Date(a.replace(/\//g, ' ')) - new Date(b.replace(/\//g, ' '))).map(([date, hits]) => ({ date, hits }));
 
-        // Metadata
-        const dates = allParsedLines.map(l => l.date).filter(Boolean);
+        const dates = analysisResultData.allParsedLines.map(l => l.date).filter(Boolean);
         const startDate = dates.length > 0 ? dates[0] : 'N/A';
         const endDate = dates.length > 0 ? dates[dates.length - 1] : 'N/A';
-
+        
         return {
-            metadata: {
-                reportTitle: `تحليل لـ: ${selectedOptionText}`,
-                analysisDate: new Date().toISOString(),
-                logFileTimeRange: `${startDate} to ${endDate}`
+            summary: {
+                totalRequests: analysisResultData.totalHits,
+                analysisPeriod: `${startDate} to ${endDate}`,
+                totalVerifiedBotRequests: sortedBotTraffic.reduce((acc, bot) => bot.bot !== 'Other/Unknown' ? acc + bot.count : acc, 0)
             },
-            statistics_ForFilter: {
-                totalHitsInFile: totalHits,
-                filteredHits: filteredData.filteredHits,
-                successHits: filteredData.successHits,
-                errorHits: filteredData.errorHits
-            },
-            botAnalysis_InFile,
-            dailyActivity_ForFilter,
-            topCrawledPages_ForFilter,
-            top404Errors_ForFilter,
-            crawlData_ForIntegration
+            botAnalysis: sortedBotTraffic,
+            topCrawledPages: sortedTopPages,
+            top404Errors: sorted404Pages,
+            dailyBotActivity: sortedDailyActivity
         };
     }
 
     function exportResults() { // JSON Export
         const data = getFullAnalysisData();
-        if (!data) return alert('لا توجد بيانات للتحليل والتصدير.');
+        if (!data) {
+            alert('لا توجد بيانات للتحليل والتصدير.');
+            return;
+        }
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        downloadFile(blob, `log_analysis_report_${botFilterSelect.value}_${Date.now()}.json`);
+        downloadFile(blob, `full_log_analysis_${Date.now()}.json`);
     }
     
     async function exportToCsv() { // ZIP of CSVs Export
         const data = getFullAnalysisData();
-        if (!data) return alert('لا توجد بيانات للتحليل والتصدير.');
+        if (!data) {
+            alert('لا توجد بيانات للتحليل والتصدير.');
+            return;
+        }
+        
         const zip = new JSZip();
 
         // Sheet 1: Summary
-        zip.file("01_summary.csv", "\uFEFF" + [
-            `Metric,Value`,
-            `Report For,"${data.metadata.reportTitle}"`,
-            `Total Requests In File,"${data.statistics_ForFilter.totalHitsInFile}"`,
-            `Filtered Requests,"${data.statistics_ForFilter.filteredHits}"`,
-            `Analysis Period,"${data.metadata.logFileTimeRange}"`,
-        ].join('\n'));
+        let summaryCsv = `Metric,Value\n`;
+        summaryCsv += `Total Requests,"${data.summary.totalRequests}"\n`;
+        summaryCsv += `Analysis Period,"${data.summary.analysisPeriod}"\n`;
+        summaryCsv += `Total Verified Bot Requests,"${data.summary.totalVerifiedBotRequests}"\n`;
+        zip.file("01_summary.csv", "\uFEFF" + summaryCsv);
 
-        // Sheet 2: Bot Traffic Overview (from whole file)
-        zip.file("02_bot_traffic_overview.csv", "\uFEFF" + [
-            `Bot,Total_Hits,Percentage_Of_Total`,
-            ...data.botAnalysis_InFile.map(row => `${row.bot},${row.count},${row.percentage}`)
-        ].join('\n'));
+        // Sheet 2: Bot Traffic
+        let botCsv = `Bot,Hits,Percentage\n`;
+        data.botAnalysis.forEach(row => {
+            botCsv += `${row.bot},${row.count},${row.percentage}\n`;
+        });
+        zip.file("02_bot_traffic.csv", "\uFEFF" + botCsv);
         
-        // Sheet 3: Top Pages (for the current filter)
-        zip.file("03_top_pages_(filtered).csv", "\uFEFF" + [
-            `URL,Hits`,
-            ...data.topCrawledPages_ForFilter.map(row => `"${row.url.replace(/"/g, '""')}",${row.hits}`)
-        ].join('\n'));
+        // Sheet 3: Top Pages
+        let pagesCsv = `URL,Hits\n`;
+        data.topCrawledPages.forEach(row => {
+            pagesCsv += `"${row.url}",${row.hits}\n`;
+        });
+        zip.file("03_top_pages.csv", "\uFEFF" + pagesCsv);
         
-        // Sheet 4: 404 Errors (for the current filter)
-        if (data.top404Errors_ForFilter.length > 0) {
-            zip.file("04_404_errors_(filtered).csv", "\uFEFF" + [
-                `URL,404_Hits`,
-                ...data.top404Errors_ForFilter.map(row => `"${row.url.replace(/"/g, '""')}",${row.hits}`)
-            ].join('\n'));
+        // Sheet 4: 404 Errors
+        if (data.top404Errors.length > 0) {
+            let errorsCsv = `URL,404_Hits\n`;
+            data.top404Errors.forEach(row => {
+                errorsCsv += `"${row.url}",${row.hits}\n`;
+            });
+            zip.file("04_404_errors.csv", "\uFEFF" + errorsCsv);
         }
 
-        // Sheet 5: Daily Activity (for the current filter)
-        zip.file("05_daily_activity_(filtered).csv", "\uFEFF" + [
-            `Date,Hits`,
-            ...data.dailyActivity_ForFilter.map(row => `${row.date},${row.hits}`)
-        ].join('\n'));
+        // Sheet 5: Daily Activity
+        let dailyCsv = `Date,Verified_Bot_Hits\n`;
+        data.dailyBotActivity.forEach(row => {
+            dailyCsv += `${row.date},${row.hits}\n`;
+        });
+        zip.file("05_daily_activity.csv", "\uFEFF" + dailyCsv);
 
         const content = await zip.generateAsync({ type: "blob" });
-        downloadFile(content, `log_analysis_sheets_${botFilterSelect.value}_${Date.now()}.zip`);
+        downloadFile(content, `log_analysis_report_${Date.now()}.zip`);
     }
     
-    // ... (rest of the file remains the same) ...
-    function handleCopyEmail(){if(!emailTemplate||!copyEmailBtn)return;const e=emailTemplate.value;navigator.clipboard&&window.isSecureContext?navigator.clipboard.writeText(e).then(showCopySuccess,showCopyError):(()=>{const t=document.createElement("textarea");t.value=e,t.style.position="absolute",t.style.left="-9999px",document.body.appendChild(t),t.select();try{document.execCommand("copy"),showCopySuccess()}catch(e){showCopyError(e)}finally{document.body.removeChild(t)}})()}
-    function showCopySuccess(){const e=copyEmailBtn.innerHTML;copyEmailBtn.disabled=!0,copyEmailBtn.innerHTML='<i class="bi bi-check-lg ms-1"></i> تم النسخ بنجاح!',copyEmailBtn.classList.remove("btn-secondary"),copyEmailBtn.classList.add("btn-success"),setTimeout(()=>{copyEmailBtn.innerHTML=e,copyEmailBtn.disabled=!1,copyEmailBtn.classList.remove("btn-success"),copyEmailBtn.classList.add("btn-secondary")},2e3)}
-    function showCopyError(e){console.error("فشل في نسخ النص:",e),alert("عذراً، لم نتمكن من نسخ النص تلقائياً.")}
-    async function readZipFile(e){const t=new JSZip,o=await t.loadAsync(e);return(Object.values(o.files).find(e=>!e.dir&&(e.name.endsWith(".log")||e.name.endsWith(".txt")))?.async("string"))??(function(){throw new Error("لم يتم العثور على ملف .log أو .txt داخل الملف المضغوط.")}())}
-    function readFileContent(e){return new Promise((t,o)=>{const n=new FileReader;n.onload=e=>t(e.target.result),n.onerror=o,n.readAsText(e)})}
-    function renderCharts(e){if(!e||!document.getElementById("crawlTrendChart")||!document.getElementById("statusCodesChart"))return;const t=getComputedStyle(document.documentElement).getPropertyValue("--bs-body-color"),o=getComputedStyle(document.documentElement).getPropertyValue("--bs-border-color-translucent");crawlTrendChart&&crawlTrendChart.destroy();const n=Object.keys(e.dailyCounts).sort(((t,e)=>new Date(t.replace(/\//g," "))-new Date(e.replace(/\//g," "))));crawlTrendChart=new Chart(document.getElementById("crawlTrendChart").getContext("2d"),{type:"line",data:{labels:n,datasets:[{label:"عدد الزيارات",data:n.map((t=>e.dailyCounts[t])),borderColor:"#0dcaf0",backgroundColor:"rgba(13, 202, 240, 0.2)",fill:!0,tension:.3}]},options:{scales:{y:{beginAtZero:!0,ticks:{color:t,precision:0},grid:{color:o}},x:{ticks:{color:t},grid:{color:o}}},plugins:{legend:{display:!1}}}}),statusCodesChart&&statusCodesChart.destroy();const s={2xx:0,3xx:0,4xx:0,"5xx":0,...e.statusCounts};statusCodesChart=new Chart(document.getElementById("statusCodesChart").getContext("2d"),{type:"doughnut",data:{labels:["نجاح (2xx)","إعادة توجيه (3xx)","خطأ عميل (4xx)","خطأ خادم (5xx)"],datasets:[{data:[s["2xx"],s["3xx"],s["4xx"],s["5xx"]],backgroundColor:["#198754","#ffc107","#fd7e14","#dc3545"]}]},options:{responsive:!0,plugins:{legend:{position:"bottom",labels:{color:t,padding:15}}}}})}
+    // ===================================================================
+
+    function handleCopyEmail() {
+        if (!emailTemplate || !copyEmailBtn) return;
+        const textToCopy = emailTemplate.value;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(showCopySuccess, showCopyError);
+        } else {
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            textArea.style.position = 'absolute';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showCopySuccess();
+            } catch (err) {
+                showCopyError(err);
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+    }
+
+    function showCopySuccess() {
+        const originalContent = copyEmailBtn.innerHTML;
+        copyEmailBtn.disabled = true;
+        copyEmailBtn.innerHTML = `<i class="bi bi-check-lg ms-1"></i> تم النسخ بنجاح!`;
+        copyEmailBtn.classList.remove('btn-secondary');
+        copyEmailBtn.classList.add('btn-success');
+        setTimeout(() => {
+            copyEmailBtn.innerHTML = originalContent;
+            copyEmailBtn.disabled = false;
+            copyEmailBtn.classList.remove('btn-success');
+            copyEmailBtn.classList.add('btn-secondary');
+        }, 2000);
+    }
+
+    function showCopyError(err) {
+         console.error('فشل في نسخ النص:', err);
+         alert('عذراً، لم نتمكن من نسخ النص تلقائياً.');
+    }
+    
+    async function readZipFile(file) {
+        const jszip = new JSZip();
+        const zip = await jszip.loadAsync(file);
+        const logFileObject = Object.values(zip.files).find(f => !f.dir && (f.name.endsWith('.log') || f.name.endsWith('.txt')));
+        if (logFileObject) return await logFileObject.async("string");
+        throw new Error("لم يتم العثور على ملف .log أو .txt داخل الملف المضغوط.");
+    }
+
+    function readFileContent(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.onerror = reject;
+            reader.readAsText(file);
+        });
+    }
+
+    function renderCharts(data) {
+        if (!data || !document.getElementById('crawlTrendChart') || !document.getElementById('statusCodesChart')) return;
+        const textColor = getComputedStyle(document.documentElement).getPropertyValue('--bs-body-color');
+        const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--bs-border-color-translucent');
+        
+        if (crawlTrendChart) crawlTrendChart.destroy();
+        const sortedDays = Object.keys(data.dailyCounts).sort((a,b) => new Date(a.replace(/\//g, ' ')) - new Date(b.replace(/\//g, ' ')));
+        crawlTrendChart = new Chart(document.getElementById('crawlTrendChart').getContext('2d'), {
+            type: 'line', data: { labels: sortedDays, datasets: [{ label: 'عدد الزيارات', data: sortedDays.map(day => data.dailyCounts[day]), borderColor: '#0dcaf0', backgroundColor: 'rgba(13, 202, 240, 0.2)', fill: true, tension: 0.3 }] },
+            options: { scales: { y: { beginAtZero: true, ticks: { color: textColor, precision: 0 }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } }, plugins: { legend: { display: false } } }
+        });
+
+        if(statusCodesChart) statusCodesChart.destroy();
+        const statusData = { '2xx': 0, '3xx': 0, '4xx': 0, '5xx': 0, ...data.statusCounts };
+        statusCodesChart = new Chart(document.getElementById('statusCodesChart').getContext('2d'), {
+            type: 'doughnut', data: { labels: ['نجاح (2xx)', 'إعادة توجيه (3xx)', 'خطأ عميل (4xx)', 'خطأ خادم (5xx)'], datasets: [{ data: [statusData['2xx'], statusData['3xx'], statusData['4xx'], statusData['5xx']], backgroundColor: ['#198754', '#ffc107', '#fd7e14', '#dc3545'] }] },
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 15 } } } }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         initializeWorker();
         loadSession(); 
+        
         if(dropZone) {
             dropZone.addEventListener('click', () => fileInput.click());
             dropZone.addEventListener('dragenter', (e) => { e.preventDefault(); dropZone.classList.add("dragover"); });
             dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add("dragover"); });
             dropZone.addEventListener('dragleave', () => dropZone.classList.remove("dragover"));
-            dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove("dragover"); handleFileSelect({ target: { files: e.dataTransfer.files } }); });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove("dragover");
+                handleFileSelect({ target: { files: e.dataTransfer.files } });
+            });
         }
+
         if(fileInput) fileInput.addEventListener('change', handleFileSelect);
         if(exportJsonBtn) exportJsonBtn.addEventListener('click', exportResults);
         if(exportCsvBtn) exportCsvBtn.addEventListener('click', exportToCsv);
