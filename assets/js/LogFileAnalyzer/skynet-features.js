@@ -22,7 +22,7 @@
 
     function initializeComparisonWorker() {
         if (!window.Worker) return;
-        comparisonWorker = new Worker('assets/js/log-worker.js');
+        comparisonWorker = new Worker('../assets/js/LogFileAnalyzer/log-worker.js');
         comparisonWorker.onmessage = function(event) {
             const { type, result, error } = event.data;
             if (type === 'complete') {
